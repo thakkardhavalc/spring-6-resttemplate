@@ -6,6 +6,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Created By dhaval on 2023-06-14
@@ -22,8 +23,10 @@ public class BeerClientImpl implements BeerClient {
     public BeerDTOPageImpl listBeers() {
         RestTemplate restTemplate = restTemplateBuilder.build();
 
+        UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromPath(GET_BEER_PATH);
+
         ResponseEntity<BeerDTOPageImpl> stringResponse =
-                restTemplate.getForEntity(GET_BEER_PATH , BeerDTOPageImpl.class);
+                restTemplate.getForEntity(uriComponentsBuilder.toUriString() , BeerDTOPageImpl.class);
 
 
         return stringResponse.getBody();
