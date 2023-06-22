@@ -6,10 +6,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Created By dhaval on 2023-06-14
@@ -19,6 +21,25 @@ class BeerClientImplTest {
 
     @Autowired
     BeerClientImpl beerClient;
+
+    @Test
+    void testDeleteBeer() {
+        BeerDTO newDto = BeerDTO.builder()
+                .price(new BigDecimal("10.99"))
+                .beerName("Mango Bobs 2")
+                .beerStyle(BeerStyle.IPA)
+                .quantityOnHand(500)
+                .upc("1234567890")
+                .build();
+
+        BeerDTO beerDTO = beerClient.createBeer(newDto);
+
+        beerClient.deleteBeer(beerDTO.getId());
+
+        assertThatThrownBy(() ->
+                beerClient.getBeerById(beerDTO.getId()))
+                .isInstanceOf(HttpClientErrorException.class);
+    }
 
     @Test
     void testUpdateBeer() {
