@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -27,12 +28,14 @@ import java.util.Collections;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestToUriTemplate;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withAccepted;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withNoContent;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withResourceNotFound;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 /**
@@ -72,6 +75,19 @@ public class BeerClientMockTest {
     }
 
     @Test
+    void testDeleteNotFound() {
+        server.expect(method(HttpMethod.DELETE))
+                .andExpect(requestToUriTemplate(URL + BeerClientImpl.GET_BEER_BY_ID_PATH, dto.getId()))
+                .andRespond(withResourceNotFound());
+
+        assertThatThrownBy(() -> {
+            beerClient.deleteBeer(dto.getId());
+        }).isInstanceOf(HttpClientErrorException.class);
+
+        server.verify();
+    }
+
+    @Test
     void testDeleteBeer() {
         server.expect(method(HttpMethod.DELETE))
                 .andExpect(requestToUriTemplate(URL + BeerClientImpl.GET_BEER_BY_ID_PATH, dto.getId()))
@@ -81,6 +97,7 @@ public class BeerClientMockTest {
 
         server.verify();
     }
+
 
     @Test
     void testUpdateBeer() {
