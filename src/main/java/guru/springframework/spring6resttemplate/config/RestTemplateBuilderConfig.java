@@ -1,6 +1,5 @@
 package guru.springframework.spring6resttemplate.config;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.web.client.RestTemplateBuilderConfigurer;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -16,19 +15,15 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 /**
  * Created By dhaval on 2023-06-21
  */
-@RequiredArgsConstructor
 @Configuration
 public class RestTemplateBuilderConfig {
 
     @Value("${rest.template.rootUrl}")
     String rootUrl;
 
-    private final ClientRegistrationRepository clientRegistrationRepository;
-    private final OAuth2AuthorizedClientService oAuth2AuthorizedClientService;
-
-
     @Bean
-    OAuth2AuthorizedClientManager auth2AuthorizedClientManager() {
+    OAuth2AuthorizedClientManager auth2AuthorizedClientManager(ClientRegistrationRepository clientRegistrationRepository,
+                                                               OAuth2AuthorizedClientService oAuth2AuthorizedClientService) {
         var authorizedClientProvider = OAuth2AuthorizedClientProviderBuilder.builder()
                 .clientCredentials()
                 .build();
@@ -41,12 +36,13 @@ public class RestTemplateBuilderConfig {
     }
 
     @Bean
-    RestTemplateBuilder restTemplateBuilder(RestTemplateBuilderConfigurer configurer){
+    RestTemplateBuilder restTemplateBuilder(RestTemplateBuilderConfigurer configurer,
+                                            OAuthClientInterceptor interceptor){
 
         assert rootUrl != null;
 
         return configurer.configure(new RestTemplateBuilder())
-
+                .additionalInterceptors(interceptor)
                 .uriTemplateHandler(new DefaultUriBuilderFactory(rootUrl));
     }
 }
